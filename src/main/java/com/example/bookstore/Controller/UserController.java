@@ -14,7 +14,6 @@ import com.example.bookstore.Service.UserService;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -35,14 +34,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> data) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
         User user = userService.loginAndGetUser(
                 data.get("email"),
                 data.get("password")
         );
 
         if (user == null) {
-            throw new RuntimeException("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Invalid email or password");
         }
 
         String token = userService.generateToken(user);
@@ -53,7 +53,7 @@ public class UserController {
         response.put("email", user.getEmail());
         response.put("role", user.getRole());
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
